@@ -1,0 +1,95 @@
+<!doctype html>
+<div id="grid"></div>
+<script src="http://code.jquery.com/jquery-1.8.0.min.js"></script>
+<script src="http://underscorejs.org/underscore.js"></script>
+<script>
+
+// Generate this crap in the backend
+function generateMatrix() {
+
+    var a = _.range(9);
+    a = _.shuffle(a),
+    clone = _.clone(a);
+
+    var rows = 3, columns = 3,
+    matrix = [];
+
+    for ( var i = 0; i<rows; i++ ) {
+        matrix[i] = [];
+        for ( var j = 0; j<columns; j++ ) {
+            var value = clone.shift();
+            matrix[i].push({ value: value } );
+        }
+    }
+
+    return matrix;
+}
+
+var matrix = generateMatrix();
+
+// columns
+for ( var i = 0; i<matrix.length; i++ ) {
+    for ( var j = 0; j<matrix[i].length; j++ ) {
+        var obj = matrix[i][j];
+        var $div = $('<div/>').addClass('block').text(  obj.value ).appendTo('#grid')
+
+        if ( obj.value === 0 ) {
+            $div.addClass('zero')
+        }
+    }
+}
+
+
+$('#grid').on('click', '.block', function(e) {
+    var value = $.trim( $(this).text() );
+    validateMove( value );
+});
+
+function validateMove( value ) {
+
+    var rows = 0, found = {};
+
+    window.found = found;
+
+    // identify the row and column our object is stored in, firstly
+    for ( var i = 0; i<matrix.length; i++ ) {
+        rows++;
+        var columns = 0;
+        for ( var j = 0; j<matrix[i].length; j++ ) {
+            columns++;
+            if ( value == matrix[i][j].value ) {
+                found.row = rows-1;
+                found.column = columns-1;
+                console.log ( found );
+            }
+        }
+    }
+
+    var bottom = matrix[ found.row +1 ] && matrix [ found.row +1 ][ found.column ];
+    var top = matrix[ found.row -1 ] && matrix [ found.row -1 ][ found.column ];
+    var right = matrix[ found.row ] && matrix[found.row][found.column+1];
+    var left = matrix[ found.row ] && matrix [found.row ][found.column-1];
+
+    var all = [bottom,top,left,right], matched = [];
+    all = all.filter(function(el) {
+        return el !== undefined ? matched.push( el.value ) : null;
+    })
+    console.log(matched);
+}
+</script>
+<style>
+div#grid {
+    width: 303px;
+}
+div.zero { visibility: hidden; }
+div.block {
+    width: 100px;
+    float: left;
+    outline:1px solid black;
+    background:#ddd;
+    text-align:center;
+    height: 100px;
+    line-height: 100px;
+    font-size: 18px;
+}
+</style>
