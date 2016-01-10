@@ -26,19 +26,39 @@ var sliderPuzzle = (function() {
 
     socket.on('registeredUser', function() {
         socket.emit('requestRooms')
-        //socket.emit('startGame')
     });
 
     socket.on('receiveRooms', function(rooms) {
         if ( rooms.length ) {
-            $.each( rooms, function( i, room ) {
-                var $a = $('<a/>').attr('href', room.url).text(room.url),
-                    $li = $('<li/>').append( $a )
+            generateRoomsHTML(rooms);
 
-                $li.appendTo('#rooms')
-            });
+            if ( roomSection ) {
+                var roomId = getRoomId();
+                rooms.forEach(function( room ) {
+                    window.room = room;
+                    if ( room.id == roomId ) {
+                        $('#users').html( 'there are ' + room.users.length + ' users in this room' );
+
+                        if ( room.users.length ) {
+                            startGame();
+                        }
+                    }
+                });
+            }
         }
     });
+
+    function startGame(room) {
+    }
+
+    function generateRoomsHTML(rooms) {
+        $.each( rooms, function( i, room ) {
+            var $a = $('<a/>').attr('href', room.url).text(room.url),
+            $li = $('<li/>').append( $a )
+
+                $li.appendTo('#rooms')
+        });
+    }
 
     return {
     }

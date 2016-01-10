@@ -1,18 +1,9 @@
 var socketio = require('socket.io')
     , io
     , rooms = []
-    , nickNames = {};
-
-/*
- * Generate the puzzle array
- */
-function generatePuzzleArray() {
-    var array = [1,2,3,4,5,6,7,8];
-    array = shuffle( array );
-    return array;
-}
-
-var puzzle = generatePuzzleArray();
+    , nickNames = {}
+    , puzzle = require('./puzzle')
+    , helpers = require('./helpers');
 
 function _findRoom( id ) {
 
@@ -25,6 +16,25 @@ function _findRoom( id ) {
     });
 
     return found;
+};
+
+function generateRoomId() {
+    return helpers.generateHash(5);
+}
+
+function _createRoom() {
+
+    var id = generateRoomId();
+    
+    var room = {
+        id: id,
+        url: '/room/' + id,
+        users: []
+    }
+
+    rooms.push( room );
+
+    return room;
 };
 
 exports.listen = function( server ) {
@@ -40,9 +50,9 @@ exports.listen = function( server ) {
 
             if ( tempRoom ) {
                 tempRoom.users.push( socket.id );
+                socket.emit('registeredUser');
             }
 
-            socket.emit('registeredUser');
         });
 
         socket.on('joinRoom', function( room ) {
@@ -72,54 +82,5 @@ exports.listen = function( server ) {
     });
 };
 
-function _createRoom() {
-
-    var id = makeRoomId();
-    
-    var room = {
-        id: id,
-        url: '/room/' + id,
-        users: []
-    }
-
-    rooms.push( room );
-
-    return room;
-};
-
 exports.findRoom = _findRoom;
 exports.createRoom = _createRoom;
-
-function makeRoomId()
-{
-    var text = "";
-    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-    for( var i=0; i < 5; i++ )
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-    return text;
-}
-
-/*
- * Shuffle the elements of an array randomly
- */
-function shuffle(array) {
-  var currentIndex = array.length, temporaryValue, randomIndex;
-
-  // While there remain elements to shuffle...
-  while (0 !== currentIndex) {
-
-    // Pick a remaining element...
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex -= 1;
-
-    // And swap it with the current element.
-    temporaryValue = array[currentIndex];
-    array[currentIndex] = array[randomIndex];
-    array[randomIndex] = temporaryValue;
-  }
-
-  return array;
-}
-
